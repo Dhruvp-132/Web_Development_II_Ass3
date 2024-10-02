@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Donate</title>
+</head>
+<body>
+
+    <h1>Donate to Fundraiser</h1>
+    <div id="fundraiser"></div>
+
+    <form id="donationForm">
+        <label for="giver">Your Name:</label>
+        <input type="text" id="giver" name="giver" required>
+        <br><br>
+        <label for="amount">Donation Amount (AUD):</label>
+        <input type="number" id="amount" name="amount" required min="5">
+        <br><br>
+        <button type="submit">Submit Donation</button>
+    </form>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const fundraiserId = urlParams.get('id');
+
+        fetch(`/fundraiser/${fundraiserId}`)
+            .then(response => response.json())
+            .then(data => {
+                const fundraiserDiv = document.getElementById('fundraiser');
+                fundraiserDiv.innerHTML = `<h2>${data[0].CAPTION}</h2>
+                                           <p>Organized by: ${data[0].ORGANIZER}</p>`;
+            });
+
+        document.getElementById('donationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const giver = document.getElementById('giver').value;
+            const amount = document.getElementById('amount').value;
+
+            fetch('/donation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ giver, amount, fundraiserId })
+            })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                window.location.href = `/fundraiser.html?id=${fundraiserId}`;
+            });
+        });
+    </script>
+
+</body>
+</html>
