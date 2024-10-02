@@ -1,94 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Crowdfunding Platform - Fundraiser</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundraiser Details</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
             margin: 0;
-            padding: 0;
+            padding: 20px;
         }
-        .menu {
-            margin-bottom: 20px;
-            background-color: #f0f0f0;
+        .menu { 
+            margin-bottom: 20px; 
             padding: 10px;
+            background-color: #007BFF;
+            color: white;
             text-align: center;
         }
-        .menu a {
-            margin-right: 10px;
-            text-decoration: none;
-            color: #007BFF;
+        .menu a { 
+            margin-right: 15px; 
+            text-decoration: none; 
+            color: white; 
+            font-weight: bold;
+            text-align: center;
         }
-        .fundraiser-details {
-            margin: 20px 0;
+        .fundraiser-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            max-width: 800px;
+            margin: auto;
         }
-        .fundraiser-details img {
-            max-width: 100%;
-            height: auto;
+     
+        .fundraiser h2 {
+            color: #343a40;
         }
-        .fundraiser-details h2 {
-            margin-top: 0;
+        .fundraiser p {
+            color: #555;
         }
-        .fundraiser-details p {
-            margin-bottom: 10px;
+        .fundraiser strong {
+            color: #000;
         }
-        .fundraiser-details .button {
+        .donate-button {
+            display: inline-block;
             background-color: #007BFF;
-            color: #ffffff;
-            padding: 10px 20px;
+            color: white;
             border: none;
+            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 20px;
         }
-        .fundraiser-details .button:hover {
-            background-color: #0069d9;
+        .donate-button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <nav class="menu">
-            <a href="index.html">Home</a>
-            <a href="search.html">Search</a>
-            <a href="fundraiser.html">Fundraisers</a>
-        </nav>
-    </header>
+    <div class="menu">
+        <a href="index.html">Home</a>
+        <a href="search.html">Fundraisers</a>
+    </div>
 
-    <main>
-        <section class="fundraiser-details">
-            <h2 id="fundraiser-caption"></h2>
-            <p id="fundraiser-organizer"></p>
-            <p id="fundraiser-target-funding"></p>
-            <p id="fundraiser-current-funding"></p>
-            <p id="fundraiser-city"></p>
-            <p id="fundraiser-category"></p>
-            <img id="fundraiser-image" src="" alt="Fundraiser Image">
-            <button class="button" onclick="alert('This feature is under construction')">Donate</button>
-        </section>
+    <div class="fundraiser-container">
+        <div id="fundraiser" class="fundraiser"></div>
+    </div>
 
-        <script>
-            const fundraiserId = new URLSearchParams(window.location.search).get('id');
-            fetch(`http://localhost:3000/fundraisers`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('fundraiser-caption').textContent = data.CAPTION;
-                document.getElementById('fundraiser-organizer').textContent = `Organized by: ${data.ORGANIZER}`;
-                document.getElementById('fundraiser-target-funding').textContent = `Target Funding: ${data.TARGET_FUNDING} AUD`;
-                document.getElementById('fundraiser-current-funding').textContent = `Current Funding: ${data.CURRENT_FUNDING} AUD`;
-                document.getElementById('fundraiser-city').textContent = `City: ${data.CITY}`;
-                document.getElementById('fundraiser-category').textContent = `Category: ${data.CATEGORY}`;
-                document.getElementById('fundraiser-image').src = 'https://chaptermentalhealth.org/wp-content/uploads/2020/01/Fundraising-Ideas.jpg';
-            });
-        </script>
-    </main>
+    <script>
+        function getFundraiserId() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            console.log('Fundraiser ID:', id);
+            return id;
+        }
 
-    <footer>
-        <p>&copy; 2023 Crowdfunding Platform</p>
-    </footer>
+        function fetchFundraiserDetails() {
+            const fundraiserId = getFundraiserId();
+            if (!fundraiserId) {
+                document.getElementById('fundraiser').innerHTML = '<p>Fundraiser ID not provided.</p>';
+                return;
+            }
+
+            const query = `http://localhost:3000/fundraiser/${fundraiserId}`;
+            fetch(query)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || data.length === 0) {
+                        document.getElementById('fundraiser').innerHTML = '<p style="color: red;">Fundraiser not found.</p>';
+                    } else {
+                        const fundraiser = data[0];  // Assuming the API returns an array
+                        const isActive = fundraiser.ACTIVE ? 'Active' : 'Suspended';
+                        document.getElementById('fundraiser').innerHTML = `
+                        
+                            <h2>${fundraiser.CAPTION}</h2>
+                            <p><strong>ID:</strong> ${fundraiser.FUNDRAISER_ID}</p>
+                            <p><strong>Organized by:</strong> ${fundraiser.ORGANIZER}</p>
+                            <p><strong>Target Funding:</strong> ${fundraiser.TARGET_FUNDING} AUD</p>
+                            <p><strong>Current Funding:</strong> ${fundraiser.CURRENT_FUNDING} AUD</p>
+                            <p><strong>City:</strong> ${fundraiser.CITY}</p>
+                            <p><strong>Status:</strong> ${isActive}</p>
+                            <p><strong>Category:</strong> ${fundraiser.CATEGORY}</p>
+                            <button class="donate-button" onclick="showDonateMessage()">Donate</button>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('fundraiser').innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
+                });
+        }
+
+        function showDonateMessage() {
+            alert('This feature is under construction.');
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchFundraiserDetails);
+    </script>
 
 </body>
 </html>
