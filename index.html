@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Crowdfunding Platform - Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .menu {
+            margin-bottom: 20px;
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: center;
+        }
+        .menu a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+        .banner {
+            width: 100%;
+            height: 200px;
+            background-color: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+        }
+        .banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .fundraiser {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .fundraiser img {
+            max-width: 100%;
+            height: auto;
+        }
+        .button {
+            background-color: #007BFF;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0069d9;
+        }
+        footer {
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: center;
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="menu">
+            <a href="index.html">Home</a>
+            <a href="search.html">Search</a>
+            <a href="fundraiser.html">Fundraisers</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="banner">
+            <img src="banner-image.jpg" alt="Banner Image">
+        </section>
+
+        <h1>Welcome to Our Non-profit Crowdfunding Platform</h1>
+        <p>We connect individuals and organizations to help raise funds for a variety of causes. Whether you're supporting a local charity or a global movement, we provide a secure platform to make an impact.</p>
+
+        <div id="fundraisers"></div>
+
+        <script>
+            fetch('/fundraisers')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('fundraisers');
+                data.forEach(fundraiser => {
+                    const div = document.createElement('div');
+                    div.className = 'fundraiser';
+
+                    const imageUrl = 'https://chaptermentalhealth.org/wp-content/uploads/2020/01/Fundraising-Ideas.jpg'; 
+
+                    div.innerHTML = `
+                        <img src="${imageUrl}" alt="Fundraiser Image">
+                        <h2>${fundraiser.CAPTION}</h2>
+                        <p><strong>Organized by:</strong> ${fundraiser.ORGANIZER}</p>
+                        <p><strong>Target Funding:</strong> ${fundraiser.TARGET_FUNDING} AUD</p>
+                        <p><strong>Current Funding:</strong> ${fundraiser.CURRENT_FUNDING} AUD</p>
+                        <p><strong>City:</strong> ${fundraiser.CITY}</p>
+                        <p><strong>Category:</strong> ${fundraiser.CATEGORY}</p>
+                        <a href="fundraiser.html?id=${fundraiser.FUNDRAISER_ID}" class="button">View Details</a>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+        </script>
+    </main>
+
+    <footer>
+        <p>&copy; Crowdfunding Platform 2024 </p>
+    </footer>
+
+</body>
+</html>

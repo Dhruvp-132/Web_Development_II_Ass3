@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Crowdfunding Platform - Search Fundraisers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .menu {
+            margin-bottom: 20px;
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: center;
+        }
+        .menu a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+        .search-form {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .search-form label {
+            margin-right: 10px;
+        }
+        .search-form input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .search-form button[type="submit"] {
+            background-color: #007BFF;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .search-form button[type="submit"]:hover {
+            background-color: #0069d9;
+        }
+        .search-results {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .search-results ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .search-results li {
+            margin-bottom: 10px;
+        }
+        .search-results a {
+            text-decoration: none;
+            color: #007BFF;
+        }
+        .error-message {
+            color: #FF0000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="menu">
+            <a href="index.html">Home</a>
+            <a href="search.html">Search</a>
+            <a href="fundraiser.html">Fundraisers</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="search-form">
+            <form>
+                <label>Search by:</label>
+                <label>Organizer:</label>
+                <input type="checkbox" id="organizer-checkbox" name="organizer">
+                <label>City:</label>
+                <input type="checkbox" id="city-checkbox" name="city">
+                <label>Category:</label>
+                <input type="checkbox" id="category-checkbox" name="category">
+                <button type="submit">Search</button>
+                <button type="button" onclick="clearCheckboxes()">Clear</button>
+            </form>
+        </section>
+
+        <div class="search-results">
+            <ul id="search-results"></ul>
+        </div>
+
+        <script>
+            const searchForm = document.querySelector('.search-form');
+            const organizerCheckbox = document.querySelector('#organizer-checkbox');
+            const cityCheckbox = document.querySelector('#city-checkbox');
+            const categoryCheckbox = document.querySelector('#category-checkbox');
+            const searchResults = document.querySelector('#search-results');
+
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const criteria = [];
+                if (organizerCheckbox.checked) criteria.push('organizer');
+                if (cityCheckbox.checked) criteria.push('city');
+                if (categoryCheckbox.checked) criteria.push('category');
+
+                if (criteria.length === 0) {
+                    alert('Please select at least one criteria');
+                    return;
+                }
+
+                const searchParams = new URLSearchParams();
+                criteria.forEach((criterion) => {
+                    searchParams.append(criterion, 'true');
+                });
+
+                fetch(`/search?${searchParams.toString()}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResults.innerHTML = '';
+                        if (data.length === 0) {
+                            const errorMessage = document.createElement('p');
+                            errorMessage.className = 'error-message';
+                            errorMessage.textContent = 'No fundraisers found';
+                            searchResults.appendChild(errorMessage);
+                        } else {
+                            data.forEach(fundraiser => {
+                                const li = document.createElement('li');
+                                li.innerHTML = `
+                                    <a href="fundraiser.html?id=${fundraiser.FUNDRAISER_ID}">${fundraiser.CAPTION}</a>
+                                `;
+                                searchResults.appendChild(li);
+                            });
+                        }
+                    });
+            });
+
+            function clearCheckboxes() {
+                organizerCheckbox.checked = false;
+                cityCheckbox.checked = false;
+                categoryCheckbox.checked = false;
+            }
+        </script>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Crowdfunding Platform</p>
+    </footer>
+
+</body>
+</html>

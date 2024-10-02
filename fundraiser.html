@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Crowdfunding Platform - Fundraiser</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .menu {
+            margin-bottom: 20px;
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: center;
+        }
+        .menu a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+        .fundraiser-details {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .fundraiser-details img {
+            max-width: 100%;
+            height: auto;
+        }
+        .fundraiser-details h2 {
+            margin-top: 0;
+        }
+        .fundraiser-details p {
+            margin-bottom: 10px;
+        }
+        .fundraiser-details .button {
+            background-color: #007BFF;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .fundraiser-details .button:hover {
+            background-color: #0069d9;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="menu">
+            <a href="index.html">Home</a>
+            <a href="search.html">Search</a>
+            <a href="fundraiser.html">Fundraisers</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="fundraiser-details">
+            <h2 id="fundraiser-caption"></h2>
+            <p id="fundraiser-organizer"></p>
+            <p id="fundraiser-target-funding"></p>
+            <p id="fundraiser-current-funding"></p>
+            <p id="fundraiser-city"></p>
+            <p id="fundraiser-category"></p>
+            <img id="fundraiser-image" src="" alt="Fundraiser Image">
+            <button class="button" onclick="alert('This feature is under construction')">Donate</button>
+        </section>
+
+        <script>
+            const fundraiserId = new URLSearchParams(window.location.search).get('id');
+            fetch(`http://localhost:3000/fundraisers`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('fundraiser-caption').textContent = data.CAPTION;
+                document.getElementById('fundraiser-organizer').textContent = `Organized by: ${data.ORGANIZER}`;
+                document.getElementById('fundraiser-target-funding').textContent = `Target Funding: ${data.TARGET_FUNDING} AUD`;
+                document.getElementById('fundraiser-current-funding').textContent = `Current Funding: ${data.CURRENT_FUNDING} AUD`;
+                document.getElementById('fundraiser-city').textContent = `City: ${data.CITY}`;
+                document.getElementById('fundraiser-category').textContent = `Category: ${data.CATEGORY}`;
+                document.getElementById('fundraiser-image').src = 'https://chaptermentalhealth.org/wp-content/uploads/2020/01/Fundraising-Ideas.jpg';
+            });
+        </script>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Crowdfunding Platform</p>
+    </footer>
+
+</body>
+</html>
