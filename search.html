@@ -1,156 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crowdfunding Platform - Search Fundraisers</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f5f5f5; 
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
-        .menu {
-            margin-bottom: 20px;
-            background-color: #f0f0f0;
-            padding: 10px;
+        .menu { 
+            background-color: #007BFF; 
+            padding: 10px; 
+            text-align: center; 
+        }
+        .menu a { 
+            margin-right: 15px; 
+            text-decoration: none; 
+            color: white; 
+            font-weight: bold;
+        }
+        h1 {
             text-align: center;
+            color: #333;
+            padding: 20px 0;
+            margin: 0;
+            background-color: #007BFF;
+            color: white;
+            border-bottom: 4px solid #0056b3;
         }
-        .menu a {
-            margin-right: 10px;
-            text-decoration: none;
-            color: #007BFF;
-        }
-        .search-form {
-            margin: 20px 0;
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
             padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        label {
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"] {
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            width: 100%;
         }
-        .search-form label {
-            margin-right: 10px;
-        }
-        .search-form input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        .search-form button[type="submit"] {
-            background-color: #007BFF;
-            color: #ffffff;
-            padding: 10px 20px;
+        button {
+            padding: 12px;
+            color: white;
+            background-color: #28a745;
             border: none;
             border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
+            width: 100%;
         }
-        .search-form button[type="submit"]:hover {
-            background-color: #0069d9;
+        button:hover {
+            background-color: #218838;
         }
-        .search-results {
+        .clear-btn {
+            background-color: #dc3545;
+        }
+        button.clear-btn:hover {
+            background-color: #c82333;
+        }
+        #results {
+            margin-top: 30px;
+        }
+        .fundraiser {
             margin: 20px 0;
             padding: 20px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .search-results ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .search-results li {
-            margin-bottom: 10px;
-        }
-        .search-results a {
-            text-decoration: none;
+        .fundraiser h2 {
+            margin-top: 0;
             color: #007BFF;
         }
-        .error-message {
-            color: #FF0000;
-            font-weight: bold;
+        .fundraiser a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .fundraiser a:hover {
+            background-color: #0056b3;
+        }
+        p {
+            color: #555;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            form {
+                gap: 10px;
+            }
+            button {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <nav class="menu">
-            <a href="index.html">Home</a>
-            <a href="search.html">Search</a>
-            <a href="fundraiser.html">Fundraisers</a>
-        </nav>
-    </header>
+    <div class="menu">
+        <a href="index.html">Home</a>
+        <a href="search.html">Fundraisers</a>
+    </div>
 
-    <main>
-        <section class="search-form">
-            <form>
-                <label>Search by:</label>
-                <label>Organizer:</label>
-                <input type="checkbox" id="organizer-checkbox" name="organizer">
-                <label>City:</label>
-                <input type="checkbox" id="city-checkbox" name="city">
-                <label>Category:</label>
-                <input type="checkbox" id="category-checkbox" name="category">
-                <button type="submit">Search</button>
-                <button type="button" onclick="clearCheckboxes()">Clear</button>
-            </form>
-        </section>
+    <h1>Search Fundraisers</h1>
 
-        <div class="search-results">
-            <ul id="search-results"></ul>
-        </div>
+    <div class="container">
+        <form id="searchForm">
+            <label for="organizer">Organizer:</label>
+            <input type="text" id="organizer" name="organizer" placeholder="Enter organizer's name">
 
-        <script>
-            const searchForm = document.querySelector('.search-form');
-            const organizerCheckbox = document.querySelector('#organizer-checkbox');
-            const cityCheckbox = document.querySelector('#city-checkbox');
-            const categoryCheckbox = document.querySelector('#category-checkbox');
-            const searchResults = document.querySelector('#search-results');
+            <label for="city">City:</label>
+            <input type="text" id="city" name="city" placeholder="Enter city">
 
-            searchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const criteria = [];
-                if (organizerCheckbox.checked) criteria.push('organizer');
-                if (cityCheckbox.checked) criteria.push('city');
-                if (categoryCheckbox.checked) criteria.push('category');
+            <label for="category">Category:</label>
+            <input type="text" id="category" name="category" placeholder="Enter category">
 
-                if (criteria.length === 0) {
-                    alert('Please select at least one criteria');
-                    return;
-                }
+            <button type="button" onclick="searchFundraisers()">Search</button>
+            <button type="button" class="clear-btn" onclick="clearFields()">Clear</button>
+        </form>
 
-                const searchParams = new URLSearchParams();
-                criteria.forEach((criterion) => {
-                    searchParams.append(criterion, 'true');
-                });
+        <div id="results"></div>
+    </div>
 
-                fetch(`/search?${searchParams.toString()}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        searchResults.innerHTML = '';
-                        if (data.length === 0) {
-                            const errorMessage = document.createElement('p');
-                            errorMessage.className = 'error-message';
-                            errorMessage.textContent = 'No fundraisers found';
-                            searchResults.appendChild(errorMessage);
-                        } else {
-                            data.forEach(fundraiser => {
-                                const li = document.createElement('li');
-                                li.innerHTML = `
-                                    <a href="fundraiser.html?id=${fundraiser.FUNDRAISER_ID}">${fundraiser.CAPTION}</a>
-                                `;
-                                searchResults.appendChild(li);
-                            });
-                        }
-                    });
-            });
+    <script>
+        function searchFundraisers() {
+            const organizer = document.getElementById('organizer').value;
+            const city = document.getElementById('city').value;
+            const category = document.getElementById('category').value;
 
-            function clearCheckboxes() {
-                organizerCheckbox.checked = false;
-                cityCheckbox.checked = false;
-                categoryCheckbox.checked = false;
+            if (!organizer && !city && !category) {
+                alert('Please provide at least one search criterion.');
+                return;
             }
-        </script>
-    </main>
 
-    <footer>
-        <p>&copy; 2023 Crowdfunding Platform</p>
-    </footer>
+            let query = `http://localhost:3000/search?`;
+            if (organizer) query += `organizer=${encodeURIComponent(organizer)}&`;
+            if (city) query += `city=${encodeURIComponent(city)}&`;
+            if (category) query += `category=${encodeURIComponent(category)}`;
+
+            query = query.replace(/[&?]$/, '');
+
+            fetch(query)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json(); 
+                })
+                .then(data => {
+                    const container = document.getElementById('results');
+                    container.innerHTML = '';  
+                    if (data.length === 0) {
+                        container.innerHTML = '<p style="color: red; font-weight: bold;">No fundraisers found.</p>';
+                    } else {
+                        data.forEach(fundraiser => {
+                            const div = document.createElement('div');
+                            div.className = 'fundraiser';
+                            div.innerHTML = `
+                                <h2>${fundraiser.CAPTION}</h2>
+                                <p>Organized by: ${fundraiser.ORGANIZER}</p>
+                                <p>City: ${fundraiser.CITY}</p>
+                                <p>Category: ${fundraiser.CATEGORY}</p>
+                                <a href="fundraiser.html?id=${fundraiser.FUNDRAISER_ID}">View Details</a>`;
+                            container.appendChild(div);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const container = document.getElementById('results');
+                    container.innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
+                });
+        }
+
+        function clearFields() {
+            document.getElementById('organizer').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('results').innerHTML = '';  
+        }
+    </script>
 
 </body>
 </html>
