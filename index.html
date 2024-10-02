@@ -1,115 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crowdfunding Platform - Home</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        body { 
+            font-family: Arial, sans-serif; 
             margin: 0;
             padding: 0;
-        }
-        .menu {
-            margin-bottom: 20px;
-            background-color: #f0f0f0;
-            padding: 10px;
-            text-align: center;
-        }
-        .menu a {
-            margin-right: 10px;
-            text-decoration: none;
-            color: #007BFF;
+            box-sizing: border-box;
+            background-color: #f5f5f5;
         }
         .banner {
-            width: 100%;
-            height: 200px;
-            background-color: #f0f0f0;
-            padding: 20px;
+            
             text-align: center;
+            padding: 60px 20px;
+            color: rgb(0, 0, 0);
         }
-        .banner img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .banner h1 {
+            font-size: 3em;
+            margin: 0;
+        }
+        .container {
+            padding: 20px;
         }
         .fundraiser {
             margin: 20px 0;
             padding: 20px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            background-color: white;
         }
-        .fundraiser img {
-            max-width: 100%;
-            height: auto;
+        .fundraiser img { 
+            max-width: 100%; 
+            height: auto; 
+        }
+        .menu { 
+            margin-bottom: 20px; 
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+        }
+        .menu a { 
+            margin-right: 15px; 
+            text-decoration: none; 
+            color: white; 
+            font-weight: bold;
+            text-align: center;
+        }
+        .welcome-section, .contact-info {
+            background-color: #ffffff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .contact-info p {
+            margin: 5px 0;
+        }
+        h2 {
+            color: #333;
         }
         .button {
-            background-color: #007BFF;
-            color: #ffffff;
+            display: inline-block;
             padding: 10px 20px;
-            border: none;
+            color: white;
+            background-color: #28a745;
+            text-decoration: none;
             border-radius: 5px;
-            cursor: pointer;
+            font-size: 16px;
         }
-        .button:hover {
-            background-color: #0069d9;
-        }
-        footer {
-            background-color: #f0f0f0;
-            padding: 10px;
-            text-align: center;
-            clear: both;
+        .fundraiser h2 {
+            margin-top: 0;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <nav class="menu">
-            <a href="index.html">Home</a>
-            <a href="search.html">Search</a>
-            <a href="fundraiser.html">Fundraisers</a>
-        </nav>
-    </header>
+    <div class="menu">
+        <a href="index.html">Home</a>
+        <a href="search.html">Fundraisers</a>
+    </div>
 
-    <main>
-        <section class="banner">
-            <img src="banner-image.jpg" alt="Banner Image">
-        </section>
-
+    <div class="banner">
         <h1>Welcome to Our Non-profit Crowdfunding Platform</h1>
-        <p>We connect individuals and organizations to help raise funds for a variety of causes. Whether you're supporting a local charity or a global movement, we provide a secure platform to make an impact.</p>
+        <p>Empowering communities through collective action and support.</p>
+    </div>
 
+    <div class="container">
+
+
+        <!-- Dynamic content: Active fundraisers -->
+        <h2>Active Fundraisers</h2>
         <div id="fundraisers"></div>
 
-        <script>
-            fetch('/fundraisers')
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('fundraisers');
-                data.forEach(fundraiser => {
-                    const div = document.createElement('div');
-                    div.className = 'fundraiser';
+    </div>
 
-                    const imageUrl = 'https://chaptermentalhealth.org/wp-content/uploads/2020/01/Fundraising-Ideas.jpg'; 
+    <script>
+        fetch('http://localhost:3000/fundraisers')  // API hosted
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('fundraisers');
+            if (data.length === 0) {
+                container.innerHTML = '<p>No active fundraisers at the moment.</p>';
+                return;
+            }
 
-                    div.innerHTML = `
-                        <img src="${imageUrl}" alt="Fundraiser Image">
-                        <h2>${fundraiser.CAPTION}</h2>
-                        <p><strong>Organized by:</strong> ${fundraiser.ORGANIZER}</p>
-                        <p><strong>Target Funding:</strong> ${fundraiser.TARGET_FUNDING} AUD</p>
-                        <p><strong>Current Funding:</strong> ${fundraiser.CURRENT_FUNDING} AUD</p>
-                        <p><strong>City:</strong> ${fundraiser.CITY}</p>
-                        <p><strong>Category:</strong> ${fundraiser.CATEGORY}</p>
-                        <a href="fundraiser.html?id=${fundraiser.FUNDRAISER_ID}" class="button">View Details</a>
-                    `;
-                    container.appendChild(div);
-                });
+            data.forEach(fundraiser => {
+                const div = document.createElement('div');
+                div.className = 'fundraiser';
+
+                // Placeholder image for each fundraiser
+                const imageUrl = 'https://chaptermentalhealth.org/wp-content/uploads/2020/01/Fundraising-Ideas.jpg'; 
+
+                div.innerHTML = `
+                    <img src="${imageUrl}" alt="Fundraiser Image">
+                    <h2>${fundraiser.CAPTION}</h2>
+                    <p><strong>Organized by:</strong> ${fundraiser.ORGANIZER}</p>
+                    <p><strong>Target Funding:</strong> ${fundraiser.TARGET_FUNDING} AUD</p>
+                    <p><strong>Current Funding:</strong> ${fundraiser.CURRENT_FUNDING} AUD</p>
+                    <p><strong>City:</strong> ${fundraiser.CITY}</p>
+                    <p><strong>Category:</strong> ${fundraiser.CATEGORY}</p>
+                    <a href="fundraiser.html?id=${fundraiser.FUNDRAISER_ID}" class="button">View Details</a>
+                `;
+                container.appendChild(div);
             });
-        </script>
-    </main>
+        })
+        .catch(error => {
+            console.error('Error fetching fundraisers:', error);
+            document.getElementById('fundraisers').innerHTML = '<p style="color: red;">Unable to load fundraisers. Please try again later.</p>';
+        });
+    </script>
 
-    <footer>
-        <p>&copy; Crowdfunding Platform 2024 </p>
-    </footer>
+        <!-- Static content: General information -->
+        <div class="welcome-section">
+            <h2>About Us</h2>
+            <p>We are dedicated to supporting individuals and communities in need. From medical emergencies to education, 
+            disaster relief, and more, we provide a platform where people can make a difference by contributing to important causes.</p>
+            <p>Through our crowdfunding platform, we ensure that funds go directly to those who need it most, enabling 
+            real change and tangible impact.</p>
+        </div>
 
+        <div class="contact-info">
+            <h2>Contact Us</h2>
+            <p><strong>Email:</strong> Dhruv@nonprofitcrowdfunding.com</p>
+            <p><strong>Phone:</strong> +61123456789</p>
+            <p><strong>Address:</strong> Melbourne, Victoria 3000</p>
+        </div>
 </body>
 </html>
