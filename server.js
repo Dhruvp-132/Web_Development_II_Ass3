@@ -72,16 +72,16 @@ app.get('/fundraiser/:id', (req, res) => {
 
 // Admin-side: Create a new fundraiser
 app.post('/fundraiser', (req, res) => {
-    const { organizer, caption, targetFunding, city, categoryId } = req.body;
+    const { fundraiserId, organizer, caption, targetFunding, city, categoryId } = req.body;
 
-    if (!organizer || !caption || !targetFunding || !city || !categoryId) {
+    if (!fundraiserId || !organizer || !caption || !targetFunding || !city || !categoryId) {
         return res.status(400).json({ message: 'All fields are required.' });
     }
 
-    const sql = `INSERT INTO fundraiser (ORGANIZER, CAPTION, TARGET_FUNDING, CURRENT_FUNDING, CITY, ACTIVE, CATEGORY_ID) 
-                 VALUES (?, ?, ?, 0, ?, 1, ?)`;
+    const sql = `INSERT INTO fundraiser (FUNDRAISER_ID, ORGANIZER, CAPTION, TARGET_FUNDING, CURRENT_FUNDING, CITY, ACTIVE, CATEGORY_ID)
+                 VALUES (?, ?, ?, ?, 0, ?, 1, ?)`;
 
-    connection.query(sql, [organizer, caption, targetFunding, city, categoryId], (err, result) => {
+    connection.query(sql, [fundraiserId, organizer, caption, targetFunding, city, categoryId], (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ message: 'Error adding fundraiser.' });
