@@ -5,6 +5,7 @@ const app = express();
 
 // Enable CORS for all routes
 app.use(cors());
+app.use(express.json()); // Middleware to parse JSON request bodies
 
 // Retrieve all active fundraisers including category
 app.get('/fundraisers', (req, res) => {
@@ -36,7 +37,6 @@ app.get('/search', (req, res) => {
                  JOIN CATEGORY ON fundraiser.CATEGORY_ID = category.CATEGORY_ID 
                  WHERE fundraiser.ACTIVE = 1`;
 
-    // Using parameterized queries to prevent SQL injection
     const params = [];
     if (organizer) {
         sql += ` AND fundraiser.ORGANIZER = ?`;
@@ -69,28 +69,24 @@ app.get('/fundraiser/:id', (req, res) => {
         res.json(result);
     });
 });
+
 // Admin-side: Create a new fundraiser
 app.post('/fundraiser', (req, res) => {
-    const { organizer, caption, targetFunding, city, categoryId } = req.query;
+    const { organizer, caption, targetFunding, city, categoryId } = req.body;
+
+    if (!organizer || !caption || !targetFunding || !city || !categoryId) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
 
     const sql = `INSERT INTO fundraiser (ORGANIZER, CAPTION, TARGET_FUNDING, CURRENT_FUNDING, CITY, ACTIVE, CATEGORY_ID) 
                  VALUES (?, ?, ?, 0, ?, 1, ?)`;
 
     connection.query(sql, [organizer, caption, targetFunding, city, categoryId], (err, result) => {
-        if (err) throw err;
-        res.send("Fundraiser created successfully");
-    });
-});
-// Admin-side: Update an existing fundraiser (using query parameters)
-app.put('/fundraiser/:id', (req, res) => {
-    const { organizer, caption, targetFunding, city, categoryId } = req.query;
-    const sql = `UPDATE fundraiser 
-                 SET ORGANIZER = ?, CAPTION = ?, TARGET_FUNDING = ?, CITY = ?, CATEGORY_ID = ?
-                 WHERE FUNDRAISER_ID = ?`;
-
-    connection.query(sql, [organizer, caption, targetFunding, city, categoryId, req.params.id], (err, result) => {
-        if (err) throw err;
-        res.send("Fundraiser updated successfully");
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Error adding fundraiser.' });
+        }
+        res.json({ message: 'Fundraiser created successfully!' });
     });
 });
 
@@ -99,23 +95,47 @@ app.delete('/fundraiser/:id', (req, res) => {
     const checkDonationsSql = `SELECT COUNT(*) as donationCount FROM donation WHERE FUNDRAISER_ID = ?`;
 
     connection.query(checkDonationsSql, [req.params.id], (err, result) => {
-        if (err) throw err;
+        if (err) {
+            return res.status(500).json({ message: 'Error checking donations for fundraiser.' });
+        }
 
         if (result[0].donationCount > 0) {
-            return res.status(400).send("Cannot delete fundraiser with donations");
+            return res.status(400).json({ message: 'Cannot delete fundraiser with donations.' });  // Return JSON instead of plain text
         }
 
         const sql = `DELETE FROM fundraiser WHERE FUNDRAISER_ID = ?`;
 
         connection.query(sql, [req.params.id], (err, result) => {
-            if (err) throw err;
-            res.send("Fundraiser deleted successfully");
+            if (err) {
+                return res.status(500).json({ message: 'Error deleting fundraiser.' });  // Ensure this is also JSON
+            }
+            res.json({ message: 'Fundraiser deleted successfully.' });
         });
     });
 });
 
 
+
+// Create a new donation
+app.post('/donation', (req, res) => {
+    const { fundraiserId, name, amount } = req.body;
+
+    if (!fundraiserId || !name || !amount) {
+        return res.status(400).json({ message: 'All fields (fundraiserId, name, and amount) are required.' });
+    }
+
+    const sql = `INSERT INTO donation (DATE, AMOUNT, GIVER, FUNDRAISER_ID) VALUES (NOW(), ?, ?, ?)`;
+
+    connection.query(sql, [amount, name, fundraiserId], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Error processing your donation.' });
+        }
+        res.json({ message: 'Thank you for your donation!' });
+    });
+});
+
 // Start the server on port 3000
 app.listen(3000, () => {
-    console.log('Server is running on port 3306');
+    console.log('Server is running on port 3000');
 });

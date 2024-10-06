@@ -1,53 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Donate</title>
+    <title>Donate to Fundraiser</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+        }
+        h1 {
+            color: #333;
+        }
+        .donation-form {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .donation-form input {
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .donation-form button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .donation-form button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
 
+<div class="container">
     <h1>Donate to Fundraiser</h1>
-    <div id="fundraiser"></div>
+    
+    <!-- Fundraiser details -->
+    <div id="fundraiserDetails" class="fundraiser-details"></div>
 
-    <form id="donationForm">
-        <label for="giver">Your Name:</label>
-        <input type="text" id="giver" name="giver" required>
-        <br><br>
-        <label for="amount">Donation Amount (AUD):</label>
-        <input type="number" id="amount" name="amount" required min="5">
-        <br><br>
-        <button type="submit">Submit Donation</button>
+    <form id="donationForm" class="donation-form">
+        <input type="text" id="name" placeholder="Your Name" required><br>
+        <input type="number" id="amount" placeholder="Donation Amount (minimum 5 AUD)" required min="5><br>
+        <button type="submit" id="donateButton">Submit my donation</button>
     </form>
 
+    <p id="statusMessage"></p> <!-- For status updates -->
+
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const fundraiserId = urlParams.get('id');
+        const fundraiserId = new URLSearchParams(window.location.search).get('id');
 
-        fetch(`/fundraiser/${fundraiserId}`)
-            .then(response => response.json())
-            .then(data => {
-                const fundraiserDiv = document.getElementById('fundraiser');
-                fundraiserDiv.innerHTML = `<h2>${data[0].CAPTION}</h2>
-                                           <p>Organized by: ${data[0].ORGANIZER}</p>`;
-            });
+        // Fetch the fundraiser details
+        function fetchFundraiserDetails() {
+            fetch(`http://localhost:3000/fundraiser/${fundraiserId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data || data.length === 0) {
+                        document.getElementById('fundraiserDetails').innerHTML = '<p>Fundraiser not found.</p>';
+                    } else {
+                        const fundraiser = data[0];  // Assuming the API returns an array
+                        document.getElementById('fundraiserDetails').innerHTML = `
+                            <h2>${fundraiser.CAPTION}</h2>
+                            <p><strong>Organized by:</strong> ${fundraiser.ORGANIZER}</p>
+                            <p><strong>Target Funding:</strong> ${fundraiser.TARGET_FUNDING} AUD</p>
+                            <p><strong>Current Funding:</strong> ${fundraiser.CURRENT_FUNDING} AUD</p>
+                            <p><strong>City:</strong> ${fundraiser.CITY}</p>
+                            <p><strong>Status:</strong> ${fundraiser.ACTIVE ? 'Active' : 'Suspended'}</p>
+                            <p><strong>Category:</strong> ${fundraiser.CATEGORY}</p>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching fundraiser:", err);
+                    document.getElementById('fundraiserDetails').innerHTML = `<p style="color: red;">An error occurred: ${err.message}</p>`;
+                });
+        }
 
+        // Handle the form submission
         document.getElementById('donationForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const giver = document.getElementById('giver').value;
+            event.preventDefault(); // Prevent default form submission
+            
+            const name = document.getElementById('name').value;
             const amount = document.getElementById('amount').value;
+            const donateButton = document.getElementById('donateButton');
+            const statusMessage = document.getElementById('statusMessage');
 
-            fetch('/donation', {
+            // Disable the donate button to prevent multiple submissions
+            donateButton.disabled = true;
+            statusMessage.textContent = '';
+
+            // Check for minimum donation amount
+            if (amount < 5) {
+                alert('Minimum donation amount is 5 AUD.');
+                donateButton.disabled = false; // Re-enable the button
+                return;
+            }
+
+            // Send the POST request to the server
+            fetch(`http://localhost:3000/donation`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ giver, amount, fundraiserId })
+                body: JSON.stringify({ fundraiserId, name, amount })
             })
-            .then(response => response.text())
-            .then(message => {
-                alert(message);
-                window.location.href = `/fundraiser.html?id=${fundraiserId}`;
+            .then(response => response.json())
+            .then(data => {
+                alert(`Thank you for your donation to ${fundraiser.CAPTION}!`);
+                window.location.href = `fundraiser.html?id=${fundraiserId}`; // Redirect to fundraiser page
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your donation. Please try again.');
+                donateButton.disabled = false; // Re-enable the button in case of an error
             });
         });
+
+        // Fetch the fundraiser details on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchFundraiserDetails();
+        });
     </script>
+</div>
 
 </body>
 </html>
