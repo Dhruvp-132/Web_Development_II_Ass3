@@ -114,26 +114,59 @@ app.delete('/fundraiser/:id', (req, res) => {
     });
 });
 
+// Admin-side: Update an existing fundraiser
+app.put('/fundraiser/:id', (req, res) => {
+    const { organizer, caption, targetFunding, city, categoryId } = req.body;
+
+    // Check if all fields are provided
+    if (!organizer || !caption || !targetFunding || !city || !categoryId) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    const sql = `UPDATE fundraiser 
+                 SET ORGANIZER = ?, CAPTION = ?, TARGET_FUNDING = ?, CITY = ?, CATEGORY_ID = ?
+                 WHERE FUNDRAISER_ID = ?`;
+
+    connection.query(sql, [organizer, caption, targetFunding, city, categoryId, req.params.id], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Error updating fundraiser.' });
+        }
+
+        // Return a JSON response indicating success
+        res.json({ message: 'Fundraiser updated successfully!' });
+    });
+});
 
 
 // Create a new donation
 app.post('/donation', (req, res) => {
     const { fundraiserId, name, amount } = req.body;
 
+    // Check for missing fields
     if (!fundraiserId || !name || !amount) {
         return res.status(400).json({ message: 'All fields (fundraiserId, name, and amount) are required.' });
     }
 
+    // Ensure minimum donation amount
+    if (amount < 5) {
+        return res.status(400).json({ message: 'Minimum donation amount is 5 AUD.' });
+    }
+
+    // Insert donation into the database
     const sql = `INSERT INTO donation (DATE, AMOUNT, GIVER, FUNDRAISER_ID) VALUES (NOW(), ?, ?, ?)`;
 
     connection.query(sql, [amount, name, fundraiserId], (err, result) => {
         if (err) {
-            console.error(err);
-            return res.status(500).json({ message: 'Error processing your donation.' });
+            console.error('Error processing donation:', err);
+            return res.status(500).json({ message: 'An error occurred while processing your donation. Please try again later.' });
         }
+
+        // Respond with success message
         res.json({ message: 'Thank you for your donation!' });
     });
 });
+
 
 // Start the server on port 3000
 app.listen(3000, () => {

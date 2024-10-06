@@ -48,7 +48,7 @@
 
     <form id="donationForm" class="donation-form">
         <input type="text" id="name" placeholder="Your Name" required><br>
-        <input type="number" id="amount" placeholder="Donation Amount (minimum 5 AUD)" required min="5><br>
+        <input type="number" id="amount" placeholder="Donation Amount (minimum 5 AUD)" required min="5"><br>
         <button type="submit" id="donateButton">Submit my donation</button>
     </form>
 
@@ -109,7 +109,13 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fundraiserId, name, amount })
             })
-            .then(response => response.json())
+            .then(response => {
+                // Check if the response is okay
+                if (!response.ok) {
+                    throw new Error('Failed to process the donation');
+                }
+                return response.json();
+            })
             .then(data => {
                 alert(`Thank you for your donation to ${data.fundraiserName}!`); // Update with the fundraiser name from response
                 window.location.href = `fundraiser.html?id=${fundraiserId}`; // Redirect to fundraiser page
