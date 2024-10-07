@@ -155,7 +155,7 @@
                 return;
             }
 
-            let query = `http://localhost:3000/search?`;
+            let query = `http://localhost:8080/DataServ/search?`;
             if (organizer) query += `organizer=${encodeURIComponent(organizer)}&`;
             if (city) query += `city=${encodeURIComponent(city)}&`;
             if (category) query += `category=${encodeURIComponent(category)}`;
