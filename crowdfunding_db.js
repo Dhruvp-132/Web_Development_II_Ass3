@@ -1,16 +1,21 @@
+// Import mysql module
 const mysql = require('mysql2');
 
-const connection = mysql.createConnection({
+// Define the database connection configuration
+const dbConfig = {
   host: 'localhost',
   user: 'root',
   password: 'Dp@08052004', 
   database: 'crowdfunding_db',	
   port: 3306 
-});
+};
 
-connection.connect((err) => {
-  if (err) throw err;
-  console.log('Connected to MySQL database!');
-});
+// Create a function that returns a MySQL connection object
+function getconnection() {
+    return mysql.createConnection(dbConfig);
+}
 
-module.exports = connection;
+// Export the function so that other files can use it
+module.exports = {
+    getconnection: getconnection
+};

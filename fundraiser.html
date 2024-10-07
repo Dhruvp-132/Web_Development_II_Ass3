@@ -79,7 +79,7 @@
                 return;
             }
 
-            const query = `http://localhost:3000/fundraiser/${fundraiserId}`;
+            const query = `http://localhost:8080/DataServ/fundraiser/${fundraiserId}`;
             fetch(query)
                 .then(response => {
                     if (!response.ok) {

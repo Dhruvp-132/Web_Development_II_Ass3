@@ -59,7 +59,7 @@
 
         // Fetch the fundraiser details
         function fetchFundraiserDetails() {
-            fetch(`http://localhost:3000/fundraiser/${fundraiserId}`)
+            fetch(`http://localhost:8080/DataServ/fundraiser/${fundraiserId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (!data || data.length === 0) {
@@ -104,7 +104,7 @@
             }
 
             // Send the POST request to the server
-            fetch(`http://localhost:3000/donation`, {
+            fetch(`http://localhost:8080/DataServ/donation`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fundraiserId, name, amount })

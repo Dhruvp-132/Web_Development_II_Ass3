@@ -1,174 +1,19 @@
 const express = require("express");
-const connection = require('./crowdfunding_db');
-const cors = require('cors');  // Import the cors middleware
+const cors = require("cors");
+const bodyparser = require("body-parser");
+const personAPI = require("./Api-Controller");
+
 const app = express();
 
-// Enable CORS for all routes
+// Middleware for parsing request bodies and enabling CORS
 app.use(cors());
-app.use(express.json()); // Middleware to parse JSON request bodies
+app.use(bodyparser.json());
+app.use(bodyparser.urlencoded({ extended: false }));
 
-// Retrieve all active fundraisers including category
-app.get('/fundraisers', (req, res) => {
-    const sql = `SELECT fundraiser.*, category.NAME as CATEGORY 
-                 FROM fundraiser 
-                 JOIN CATEGORY ON fundraiser.CATEGORY_ID = category.CATEGORY_ID 
-                 WHERE fundraiser.ACTIVE = 1`;
-    connection.query(sql, (err, result) => {
-        if (err) throw err;
-        res.json(result);
-    });
-});
+// Mount the API controller at "/DataServ"
+app.use("/DataServ", personAPI);  // You can access your API at http://localhost:8080/DataServ/
 
-// Retrieve all categories
-app.get('/categories', (req, res) => {
-    const sql = 'SELECT * FROM CATEGORY';
-    connection.query(sql, (err, result) => {
-        if (err) throw err;
-        res.json(result);
-    });
-});
-
-// Retrieve fundraisers based on search criteria
-app.get('/search', (req, res) => {
-    const { organizer, city, category } = req.query;
-    
-    let sql = `SELECT fundraiser.*, category.NAME as CATEGORY 
-                 FROM fundraiser 
-                 JOIN CATEGORY ON fundraiser.CATEGORY_ID = category.CATEGORY_ID 
-                 WHERE fundraiser.ACTIVE = 1`;
-
-    const params = [];
-    if (organizer) {
-        sql += ` AND fundraiser.ORGANIZER = ?`;
-        params.push(organizer);
-    }
-    if (city) {
-        sql += ` AND fundraiser.CITY = ?`;
-        params.push(city);
-    }
-    if (category) {
-        sql += ` AND category.NAME = ?`;
-        params.push(category);
-    }
-
-    connection.query(sql, params, (err, result) => {
-        if (err) throw err;
-        res.json(result);
-    });
-});
-
-// Retrieve fundraiser details by ID
-app.get('/fundraiser/:id', (req, res) => {
-    const sql = `SELECT fundraiser.*, category.NAME as CATEGORY 
-                 FROM fundraiser 
-                 JOIN CATEGORY ON fundraiser.CATEGORY_ID = category.CATEGORY_ID 
-                 WHERE fundraiser.FUNDRAISER_ID = ? AND fundraiser.ACTIVE = 1`;
-    
-    connection.query(sql, [req.params.id], (err, result) => {
-        if (err) throw err;
-        res.json(result);
-    });
-});
-
-// Admin-side: Create a new fundraiser
-app.post('/fundraiser', (req, res) => {
-    const { fundraiserId, organizer, caption, targetFunding, city, categoryId } = req.body;
-
-    if (!fundraiserId || !organizer || !caption || !targetFunding || !city || !categoryId) {
-        return res.status(400).json({ message: 'All fields are required.' });
-    }
-
-    const sql = `INSERT INTO fundraiser (FUNDRAISER_ID, ORGANIZER, CAPTION, TARGET_FUNDING, CURRENT_FUNDING, CITY, ACTIVE, CATEGORY_ID)
-                 VALUES (?, ?, ?, ?, 0, ?, 1, ?)`;
-
-    connection.query(sql, [fundraiserId, organizer, caption, targetFunding, city, categoryId], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: 'Error adding fundraiser.' });
-        }
-        res.json({ message: 'Fundraiser created successfully!' });
-    });
-});
-
-// Admin-side: Delete a fundraiser (only if no donations are made)
-app.delete('/fundraiser/:id', (req, res) => {
-    const checkDonationsSql = `SELECT COUNT(*) as donationCount FROM donation WHERE FUNDRAISER_ID = ?`;
-
-    connection.query(checkDonationsSql, [req.params.id], (err, result) => {
-        if (err) {
-            return res.status(500).json({ message: 'Error checking donations for fundraiser.' });
-        }
-
-        if (result[0].donationCount > 0) {
-            return res.status(400).json({ message: 'Cannot delete fundraiser with donations.' });  // Return JSON instead of plain text
-        }
-
-        const sql = `DELETE FROM fundraiser WHERE FUNDRAISER_ID = ?`;
-
-        connection.query(sql, [req.params.id], (err, result) => {
-            if (err) {
-                return res.status(500).json({ message: 'Error deleting fundraiser.' });  // Ensure this is also JSON
-            }
-            res.json({ message: 'Fundraiser deleted successfully.' });
-        });
-    });
-});
-
-// Admin-side: Update an existing fundraiser
-app.put('/fundraiser/:id', (req, res) => {
-    const { organizer, caption, targetFunding, city, categoryId } = req.body;
-
-    // Check if all fields are provided
-    if (!organizer || !caption || !targetFunding || !city || !categoryId) {
-        return res.status(400).json({ message: 'All fields are required.' });
-    }
-
-    const sql = `UPDATE fundraiser 
-                 SET ORGANIZER = ?, CAPTION = ?, TARGET_FUNDING = ?, CITY = ?, CATEGORY_ID = ?
-                 WHERE FUNDRAISER_ID = ?`;
-
-    connection.query(sql, [organizer, caption, targetFunding, city, categoryId, req.params.id], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: 'Error updating fundraiser.' });
-        }
-
-        // Return a JSON response indicating success
-        res.json({ message: 'Fundraiser updated successfully!' });
-    });
-});
-
-
-// Create a new donation
-app.post('/donation', (req, res) => {
-    const { fundraiserId, name, amount } = req.body;
-
-    // Check for missing fields
-    if (!fundraiserId || !name || !amount) {
-        return res.status(400).json({ message: 'All fields (fundraiserId, name, and amount) are required.' });
-    }
-
-    // Ensure minimum donation amount
-    if (amount < 5) {
-        return res.status(400).json({ message: 'Minimum donation amount is 5 AUD.' });
-    }
-
-    // Insert donation into the database
-    const sql = `INSERT INTO donation (DATE, AMOUNT, GIVER, FUNDRAISER_ID) VALUES (NOW(), ?, ?, ?)`;
-
-    connection.query(sql, [amount, name, fundraiserId], (err, result) => {
-        if (err) {
-            console.error('Error processing donation:', err);
-            return res.status(500).json({ message: 'An error occurred while processing your donation. Please try again later.' });
-        }
-
-        // Respond with success message
-        res.json({ message: 'Thank you for your donation!' });
-    });
-});
-
-
-// Start the server on port 3306
-app.listen(3000, () => {
-    console.log('Server is running on port 3306');
+// Start the server on port 8080
+app.listen(8080, () => {
+    console.log('Server is running on port 8080');
 });
